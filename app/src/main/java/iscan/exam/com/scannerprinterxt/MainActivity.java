@@ -10,6 +10,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -17,6 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.zebra.sdk.comm.BluetoothConnection;
 import com.zebra.sdk.comm.Connection;
@@ -45,6 +47,7 @@ public class MainActivity extends Activity {
 
     private String TAG = "zd";
 
+    private long exitTime = 0;
     private List<BlueInfo> blueList = new ArrayList<>();
     private List<String> blueListMac = new ArrayList<>();
     private Connection connection;
@@ -454,6 +457,9 @@ public class MainActivity extends Activity {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
+                CommandTools.showToast("请现开启蓝牙，否则将无法使用打印功能");
+                return;
             }
 
             blueList.clear();
@@ -495,5 +501,25 @@ public class MainActivity extends Activity {
         public String Price;
         public String Count;
         public String Total;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            exit();
+            return false;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public void exit() {
+        if ((System.currentTimeMillis() - exitTime) > 2000) {
+            Toast.makeText(getApplicationContext(), "再按一次退出程序",
+                    Toast.LENGTH_SHORT).show();
+            exitTime = System.currentTimeMillis();
+        } else {
+            finish();
+            System.exit(0);
+        }
     }
 }

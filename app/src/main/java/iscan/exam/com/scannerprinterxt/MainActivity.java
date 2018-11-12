@@ -417,7 +417,7 @@ public class MainActivity extends Activity {
 
         connection = new BluetoothConnection(tvMac.getText().toString());
         try {
-            helper.showLoadingDialog("Sending file to printer ...");
+            helper.showLoadingDialog("打印中...");
             connection.open();
             ZebraPrinter printer = ZebraPrinterFactory.getInstance(connection);
             // 相应打印方法
@@ -427,7 +427,7 @@ public class MainActivity extends Activity {
 
 //            printLable(printer, "123456", "QQQQQQQ");
         } catch (ConnectionException e) {
-            helper.showErrorDialogOnGuiThread(e.getMessage());
+            helper.showErrorDialogOnGuiThread("未找到打印机，请检查打印机是否连接正常");
         } catch (ZebraPrinterLanguageUnknownException e) {
             helper.showErrorDialogOnGuiThread(e.getMessage());
         } catch (Exception e) {

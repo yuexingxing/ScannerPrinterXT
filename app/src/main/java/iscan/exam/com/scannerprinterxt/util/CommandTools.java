@@ -16,7 +16,7 @@ public class CommandTools {
 
     public static String getDate() {
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");// HH:mm:ss
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");// HH:mm:ss
         //获取当前时间
         Date date = new Date(System.currentTimeMillis());
         return simpleDateFormat.format(date);

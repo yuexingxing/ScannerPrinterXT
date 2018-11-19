@@ -40,6 +40,7 @@ import iscan.exam.com.scannerprinterxt.data.BlueInfo;
 import iscan.exam.com.scannerprinterxt.util.CommandTools;
 import iscan.exam.com.scannerprinterxt.util.PrintUtil;
 import iscan.exam.com.scannerprinterxt.util.UIHelper;
+import iscan.exam.com.scannerprinterxt.util.ZebraPrint;
 
 /**
  * 主界面
@@ -359,5 +360,45 @@ public class MainActivity extends Activity {
         os.flush();
         os.close();
         printer.sendFileContents(filepath.getAbsolutePath());// 打印文件
+    }
+
+    public void printDemo4(ZebraPrinter printer) throws Exception {
+
+        String fileName = "Test.LBL";
+        File filepath = getFileStreamPath(fileName);
+        FileOutputStream os = this.openFileOutput(fileName, Context.MODE_PRIVATE);
+
+        os.write(getConfigLabel(printer));
+        os.flush();
+        os.close();
+        printer.sendFileContents(filepath.getAbsolutePath());// 打印文件
+    }
+
+    /*
+     * Returns the command for a test label depending on the printer control language
+     * The test label is a box with the word "TEST" inside of it
+     *
+     * _________________________
+     * |                       |
+     * |                       |
+     * |        TEST           |
+     * |                       |
+     * |                       |
+     * |_______________________|
+     *
+     *
+     */
+    private byte[] getConfigLabel(ZebraPrinter printer) {
+
+        PrinterLanguage printerLanguage = printer.getPrinterControlLanguage();
+
+        byte[] configLabel = null;
+        if (printerLanguage == PrinterLanguage.ZPL) {
+            configLabel = "^XA^FO17,16^GB379,371,8^FS^FT65,255^A0N,135,134^FDTEST^FS^XZ".getBytes();
+        } else if (printerLanguage == PrinterLanguage.CPCL) {
+            String cpclConfigLabel = "! 0 200 200 406 1\r\n" + "ON-FEED IGNORE\r\n" + "BOX 20 20 380 380 8\r\n" + "T 0 6 137 177 TEST\r\n" + "PRINT\r\n";
+            configLabel = cpclConfigLabel.getBytes();
+        }
+        return configLabel;
     }
 }

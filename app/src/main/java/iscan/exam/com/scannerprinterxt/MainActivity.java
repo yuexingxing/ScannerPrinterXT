@@ -33,7 +33,9 @@ import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import iscan.exam.com.scannerprinterxt.data.BlueInfo;
@@ -301,6 +303,8 @@ public class MainActivity extends Activity {
             connection.open();
             ZebraPrinter printer = ZebraPrinterFactory.getInstance(connection);
             printMyFormat(printer, billcode1, billcode2);
+//            printDemo4(printer);
+//            sendZplReceipt(connection);
         } catch (ConnectionException e) {
             helper.showErrorDialogOnGuiThread("未找到打印机，请检查打印机是否连接正常");
         } catch (ZebraPrinterLanguageUnknownException e) {
@@ -326,40 +330,70 @@ public class MainActivity extends Activity {
 
         String fileName = "Test.LBL";
         File filepath = getFileStreamPath(fileName);
-        FileOutputStream os = this.openFileOutput(fileName,
-                Context.MODE_PRIVATE);
+        FileOutputStream os = this.openFileOutput(fileName, Context.MODE_PRIVATE);
         PrinterLanguage pl = printer.getPrinterControlLanguage();
 
         StringBuffer sb = new StringBuffer();
 
-        sb.append("! 0 0 10  1\r\n");
-        sb.append("\r\n");
-        sb.append("    ").append("! U1 B 128 1 1 25 100 100 " + billcode1 + "\r\n").append("     " + "数量：");
-
+        sb.append("! 0 200 200 406 1\r\n" + "ON-FEED IGNORE\r\n");
+//        sb.append("    ").append("! U1 B 128 1 1 25 100 100 " + billcode1 + "\r\n").append("     " + "数量：");
+        sb.append(" T 0 6 137 177 TEST\r\n");
 //        height += 80;
 
-        sb.append("\r\n");
-        sb.append("        " + billcode1.substring(1, billcode1.length())).append("           " + "日期：" + CommandTools.getDate());
-        sb.append("                                " + "签名:");
+//        sb.append("\r\n");
+//        sb.append("        " + billcode1.substring(1, billcode1.length())).append("           " + "日期：" + CommandTools.getDate());
+//        sb.append("                                " + "签名:");
+//
+//        sb.append("\r\n");
+//        sb.append("\r\n");
+//        sb.append("    ").append("! U1 B 128 1 1 30 100 100 " + billcode2 + " \r\n");
+//
+//        sb.append("\r\n");
+//        sb.append("           ").append(billcode2.substring(1, billcode2.length()));
+//        sb.append("\r\n");
+//        sb.append("\r\n");
+        sb.append("PRINT\r\n");
 
-        sb.append("\r\n");
-        sb.append("\r\n");
-        sb.append("    ").append("! U1 B 128 1 1 30 100 100 " + billcode2 + " \r\n");
-
-        sb.append("\r\n");
-        sb.append("           ").append(billcode2.substring(1, billcode2.length()));
-        sb.append("\r\n");
-        sb.append("\r\n");
+//        String cpclConfigLabel = "! 0 200 200 406 1\r\n" + "ON-FEED IGNORE\r\n" + "BOX 20 20 100 80 2\r\n" + "T 0 6 137 177 TEST\r\n" + "PRINT\r\n";
 
         if (pl == PrinterLanguage.ZPL) {
             System.out.println("ZPL");
         } else if (pl == PrinterLanguage.CPCL) {
             System.out.println("CPCL");
         }
+
+        String cpclConfigLabel = "! 0 200 200 406 1\r\n" + "ON-FEED IGNORE\r\n" + "BOX 20 20 100 80 2\r\n" + "T 0 6 137 177 TEST\r\n" + "PRINT\r\n";
+
+        sb = new StringBuffer();
+        sb.append("! 0 200 200 406 1\r\n");
+        sb.append("ON-FEED IGNORE\r\n");
+        sb.append("BOX 20 20 100 80 2\r\n");
+        sb.append("T 0 6 137 177 TEST\r\n");
+        sb.append(printBarCode("128", 3, 0, 40, 100, 100, "123456") + "\r\n");
+        sb.append("PRINT\r\n");
+
         os.write(sb.toString().getBytes());
         os.flush();
         os.close();
         printer.sendFileContents(filepath.getAbsolutePath());// 打印文件
+    }
+
+    /**
+     * @param type          条码字体类型（例如：39,128,UPCA,UPCE,EAN13,EAN8,I2OF5,UCCEAN128,MSI,POSTNET,FIM）
+     * @param width         条码宽度
+     * @param ratio         宽窄比（例如：0 = 1.5 : 1，1 = 2.0 : 1，20 = 2.0:1，30 = 3.0:1）
+     * @param height        高度
+     * @param x             起始水平坐标
+     * @param y             起始垂直坐标
+     * @param strValue      内容
+     * @return
+     */
+    private static String printBarCode(String type,int width,int ratio,int height,int x,int y,String strValue){
+        String strBarCode = "B" + " "+type+ " "+ String.valueOf(width) + " "
+                + String.valueOf(ratio) + " " +String.valueOf(height) + " " + String.valueOf(x) + " "
+                + String.valueOf(y) + " " + strValue;
+
+        return strBarCode;
     }
 
     public void printDemo4(ZebraPrinter printer) throws Exception {
@@ -396,7 +430,7 @@ public class MainActivity extends Activity {
         if (printerLanguage == PrinterLanguage.ZPL) {
             configLabel = "^XA^FO17,16^GB379,371,8^FS^FT65,255^A0N,135,134^FDTEST^FS^XZ".getBytes();
         } else if (printerLanguage == PrinterLanguage.CPCL) {
-            String cpclConfigLabel = "! 0 200 200 406 1\r\n" + "ON-FEED IGNORE\r\n" + "BOX 20 20 380 380 8\r\n" + "T 0 6 137 177 TEST\r\n" + "PRINT\r\n";
+            String cpclConfigLabel = "! 0 200 200 406 1\r\n" + "ON-FEED IGNORE\r\n" + "BOX 20 20 100 80 2\r\n" + "T 0 6 137 177 TEST\r\n" + "PRINT\r\n";
             configLabel = cpclConfigLabel.getBytes();
         }
         return configLabel;

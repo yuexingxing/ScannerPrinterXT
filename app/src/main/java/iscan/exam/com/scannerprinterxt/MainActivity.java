@@ -219,7 +219,21 @@ public class MainActivity extends Activity {
         btnPrint.setEnabled(false);
         new Thread(new Runnable() {
             public void run() {
-                startPrint(billcode1, billcode2);
+
+                String billcodeFirst = billcode1;
+                String billcodeSenond = billcode2;
+
+                char char1First = billcodeFirst.charAt(0);
+                if (char1First >= 'A' && char1First <= 'Z' || (char1First >= 'a' && char1First <= 'z')) {
+                    billcodeFirst = billcodeFirst.substring(1, billcodeFirst.length());
+                }
+
+                char char2First = billcodeSenond.charAt(0);
+                if ((char2First >= 'A' && char2First <= 'Z') || (char2First >= 'a' && char2First <= 'z')) {
+                    billcodeSenond = billcodeSenond.substring(1, billcodeSenond.length());
+                }
+
+                startPrint(billcodeFirst, billcodeSenond);
                 runOnUiThread(new Runnable() {
                     public void run() {
                         btnPrint.setEnabled(true);
@@ -303,8 +317,6 @@ public class MainActivity extends Activity {
             connection.open();
             ZebraPrinter printer = ZebraPrinterFactory.getInstance(connection);
             printMyFormat(printer, billcode1, billcode2);
-//            printDemo4(printer);
-//            sendZplReceipt(connection);
         } catch (ConnectionException e) {
             helper.showErrorDialogOnGuiThread("未找到打印机，请检查打印机是否连接正常");
         } catch (ZebraPrinterLanguageUnknownException e) {
@@ -333,43 +345,33 @@ public class MainActivity extends Activity {
         FileOutputStream os = this.openFileOutput(fileName, Context.MODE_PRIVATE);
         PrinterLanguage pl = printer.getPrinterControlLanguage();
 
-        StringBuffer sb = new StringBuffer();
-
-        sb.append("! 0 200 200 406 1\r\n" + "ON-FEED IGNORE\r\n");
-//        sb.append("    ").append("! U1 B 128 1 1 25 100 100 " + billcode1 + "\r\n").append("     " + "数量：");
-        sb.append(" T 0 6 137 177 TEST\r\n");
-//        height += 80;
-
-//        sb.append("\r\n");
-//        sb.append("        " + billcode1.substring(1, billcode1.length())).append("           " + "日期：" + CommandTools.getDate());
-//        sb.append("                                " + "签名:");
-//
-//        sb.append("\r\n");
-//        sb.append("\r\n");
-//        sb.append("    ").append("! U1 B 128 1 1 30 100 100 " + billcode2 + " \r\n");
-//
-//        sb.append("\r\n");
-//        sb.append("           ").append(billcode2.substring(1, billcode2.length()));
-//        sb.append("\r\n");
-//        sb.append("\r\n");
-        sb.append("PRINT\r\n");
-
-//        String cpclConfigLabel = "! 0 200 200 406 1\r\n" + "ON-FEED IGNORE\r\n" + "BOX 20 20 100 80 2\r\n" + "T 0 6 137 177 TEST\r\n" + "PRINT\r\n";
-
         if (pl == PrinterLanguage.ZPL) {
             System.out.println("ZPL");
         } else if (pl == PrinterLanguage.CPCL) {
             System.out.println("CPCL");
         }
 
-        String cpclConfigLabel = "! 0 200 200 406 1\r\n" + "ON-FEED IGNORE\r\n" + "BOX 20 20 100 80 2\r\n" + "T 0 6 137 177 TEST\r\n" + "PRINT\r\n";
-
-        sb = new StringBuffer();
-        sb.append("! 0 200 200 406 1\r\n");
+        StringBuffer sb = new StringBuffer();
+        sb.append("! 0 600 400 400 1\r\n");
         sb.append("ON-FEED IGNORE\r\n");
-        sb.append("BOX 20 20 100 80 2\r\n");
-        sb.append("T 0 6 137 177 TEST\r\n");
-        sb.append(printBarCode("128", 3, 0, 40, 100, 100, "123456") + "\r\n");
+
+        sb.append(printBarCode("128", 1, 0, 40, 80, 50, billcode1));
+        sb.append(printBox(320, 50, 550, 90, 1));
+        sb.append(printText(5, 0, 330, 60, "数量:"));
+
+        //条码---日期
+        sb.append(printText(4, 0, 80, 100, billcode1));
+        sb.append(printBox(320, 100, 550, 140, 1));
+        sb.append(printText(5, 0, 330, 110, "date:   " + CommandTools.getDate()));
+
+        //签名
+        sb.append(printBox(320, 150, 550, 190, 1));
+        sb.append(printText(5, 0, 330, 160, "sign:"));
+
+        //长条码
+        sb.append(printBarCode("128", 1, 0, 30, 100, 210, billcode2));
+        sb.append(printText(5, 0, 180, 250, billcode2));
+
         sb.append("PRINT\r\n");
 
         os.write(sb.toString().getBytes());
@@ -379,19 +381,51 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * @param type          条码字体类型（例如：39,128,UPCA,UPCE,EAN13,EAN8,I2OF5,UCCEAN128,MSI,POSTNET,FIM）
-     * @param width         条码宽度
-     * @param ratio         宽窄比（例如：0 = 1.5 : 1，1 = 2.0 : 1，20 = 2.0:1，30 = 3.0:1）
-     * @param height        高度
-     * @param x             起始水平坐标
-     * @param y             起始垂直坐标
-     * @param strValue      内容
+     * @param font     字体
+     * @param size     字号
+     * @param x        起始水平坐标
+     * @param y        起始垂直坐标
+     * @param strValue 内容
      * @return
      */
-    private static String printBarCode(String type,int width,int ratio,int height,int x,int y,String strValue){
-        String strBarCode = "B" + " "+type+ " "+ String.valueOf(width) + " "
-                + String.valueOf(ratio) + " " +String.valueOf(height) + " " + String.valueOf(x) + " "
-                + String.valueOf(y) + " " + strValue;
+    private static String printText(int font, double size, double x, double y, String strValue) {
+        String strText = "T" + " " + String.valueOf(font) + " "
+                + String.valueOf(size) + " " + String.valueOf(x) + " "
+                + String.valueOf(y) + " " + strValue + "\r\n";
+
+        return strText;
+    }
+
+    /**
+     * BOX ：打印方框
+     * {x0 }:左上角横向坐标
+     * {y0 }:左上角纵向坐标
+     * {x1}:右下角横向坐标
+     * {y1}:右上角纵向坐标
+     * {width}: 线条宽度
+     */
+    private static String printBox(double x, double y, double width, double height, int border) {
+        String strText = "BOX" + " " + String.valueOf(x) + " "
+                + String.valueOf(y) + " " + String.valueOf(width) + " "
+                + String.valueOf(height) + " " + border + "\r\n";
+
+        return strText;
+    }
+
+    /**
+     * @param type     条码字体类型（例如：39,128,UPCA,UPCE,EAN13,EAN8,I2OF5,UCCEAN128,MSI,POSTNET,FIM）
+     * @param width    条码宽度
+     * @param ratio    宽窄比（例如：0 = 1.5 : 1，1 = 2.0 : 1，20 = 2.0:1，30 = 3.0:1）
+     * @param height   高度
+     * @param x        起始水平坐标
+     * @param y        起始垂直坐标
+     * @param strValue 内容
+     * @return
+     */
+    private static String printBarCode(String type, int width, int ratio, int height, int x, int y, String strValue) {
+        String strBarCode = "B" + " " + type + " " + String.valueOf(width) + " "
+                + String.valueOf(ratio) + " " + String.valueOf(height) + " " + String.valueOf(x) + " "
+                + String.valueOf(y) + " " + strValue + "\r\n";
 
         return strBarCode;
     }

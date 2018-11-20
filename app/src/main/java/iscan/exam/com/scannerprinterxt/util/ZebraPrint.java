@@ -416,6 +416,14 @@ public class ZebraPrint {
         return strText;
     }
 
+    private static String printBox(int font, double size, double x, double y, String strValue) {
+        String strText = "VT" + " " + String.valueOf(font) + " "
+                + String.valueOf(size) + " " + String.valueOf(x) + " "
+                + String.valueOf(y) + " " + strValue;
+
+        return strText;
+    }
+
     /**
      * @param type     条码字体类型（例如：39,128,UPCA,UPCE,EAN13,EAN8,I2OF5,UCCEAN128,MSI,POSTNET,FIM）
      * @param width    条码宽度

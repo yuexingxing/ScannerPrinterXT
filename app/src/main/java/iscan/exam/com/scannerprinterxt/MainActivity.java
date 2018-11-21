@@ -355,6 +355,7 @@ public class MainActivity extends Activity {
         sb.append("! 0 600 400 400 1\r\n");
         sb.append("ON-FEED IGNORE\r\n");
 
+        //短条码---数量
         sb.append(printBarCode("128", 1, 0, 40, 80, 50, billcode1));
         sb.append(printBox(320, 50, 550, 90, 1));
         sb.append(printText(5, 1, 330, 60, "size:"));
@@ -364,11 +365,11 @@ public class MainActivity extends Activity {
         sb.append(printBox(320, 100, 550, 140, 1));
         sb.append(printText(5, 0, 330, 110, "date:   " + CommandTools.getDate()));
 
-        //签名
+        //---签名
         sb.append(printBox(320, 150, 550, 190, 1));
         sb.append(printText(5, 3.55, 330, 160, "sign:"));
 
-        //长条码
+        //长条码---
         sb.append(printBarCode("128", 1, 0, 30, 100, 210, billcode2));
         sb.append(printText(5, 2.8, 180, 250, billcode2));
 

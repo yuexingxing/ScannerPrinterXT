@@ -30,19 +30,14 @@ import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import iscan.exam.com.scannerprinterxt.data.BlueInfo;
 import iscan.exam.com.scannerprinterxt.util.CommandTools;
-import iscan.exam.com.scannerprinterxt.util.PrintUtil;
 import iscan.exam.com.scannerprinterxt.util.UIHelper;
-import iscan.exam.com.scannerprinterxt.util.ZebraPrint;
 
 /**
  * 主界面
@@ -50,7 +45,6 @@ import iscan.exam.com.scannerprinterxt.util.ZebraPrint;
 public class MainActivity extends Activity {
 
     private String TAG = "zd";
-    String strWrap = "\r\n";
     private long exitTime = 0;
     private List<BlueInfo> blueList = new ArrayList<>();
     private List<String> blueListMac = new ArrayList<>();
@@ -352,27 +346,37 @@ public class MainActivity extends Activity {
         }
 
         StringBuffer sb = new StringBuffer();
-        sb.append("! 0 600 400 400 1\r\n");
+        sb.append("! 0 600 400 300 1\r\n");
         sb.append("ON-FEED IGNORE\r\n");
 
+        int lineHeight = 50;
+        int totalHeight = 0;
+
         //短条码---数量
-        sb.append(printBarCode("128", 1, 0, 40, 80, 50, billcode1));
-        sb.append(printBox(320, 50, 550, 90, 1));
-        sb.append(printText(5, 1, 330, 60, "size:"));
+        sb.append(printBarCode("128", 1, 0, 40, 80, totalHeight, billcode1));
+        sb.append(printBox(320, 0, 550, 40, 1));
+        sb.append(printText(5, 0, 330, totalHeight + 10, "no:"));
+
+        totalHeight += lineHeight;
 
         //条码---日期
-        sb.append(printText(4, 0, 80, 100, billcode1));
-        sb.append(printBox(320, 100, 550, 140, 1));
-        sb.append(printText(5, 0, 330, 110, "date:   " + CommandTools.getDate()));
+        sb.append(printText(4, 0, 80, totalHeight, billcode1));
+        sb.append(printBox(320, totalHeight, 550, totalHeight + 40, 1));
+        sb.append(printText(5, 0, 330, totalHeight + 10, "date:   " + CommandTools.getDate()));
+
+        totalHeight += lineHeight;
 
         //---签名
-        sb.append(printBox(320, 150, 550, 190, 1));
-        sb.append(printText(5, 3.55, 330, 160, "sign:"));
+        sb.append(printBox(320, totalHeight, 550, totalHeight + 40, 1));
+        sb.append(printText(5, 0, 330, totalHeight + 10, "sign:"));
+
+        totalHeight += lineHeight;
 
         //长条码---
-        sb.append(printBarCode("128", 1, 0, 30, 100, 210, billcode2));
-        sb.append(printText(5, 2.8, 180, 250, billcode2));
+        sb.append(printBarCode("128", 1, 0, 30, 100, totalHeight, billcode2));
+        sb.append(printText(5, 0, 180, totalHeight + 40, billcode2));
 
+        sb.append("FORM\r\n");
         sb.append("PRINT\r\n");
 
         os.write(sb.toString().getBytes());

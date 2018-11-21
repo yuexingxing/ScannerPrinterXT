@@ -357,7 +357,7 @@ public class MainActivity extends Activity {
 
         sb.append(printBarCode("128", 1, 0, 40, 80, 50, billcode1));
         sb.append(printBox(320, 50, 550, 90, 1));
-        sb.append(printText(5, 0, 330, 60, "数量:"));
+        sb.append(printText(5, 1, 330, 60, "size:"));
 
         //条码---日期
         sb.append(printText(4, 0, 80, 100, billcode1));
@@ -366,11 +366,11 @@ public class MainActivity extends Activity {
 
         //签名
         sb.append(printBox(320, 150, 550, 190, 1));
-        sb.append(printText(5, 0, 330, 160, "sign:"));
+        sb.append(printText(5, 3.55, 330, 160, "sign:"));
 
         //长条码
         sb.append(printBarCode("128", 1, 0, 30, 100, 210, billcode2));
-        sb.append(printText(5, 0, 180, 250, billcode2));
+        sb.append(printText(5, 2.8, 180, 250, billcode2));
 
         sb.append("PRINT\r\n");
 
@@ -386,7 +386,17 @@ public class MainActivity extends Activity {
      * @param x        起始水平坐标
      * @param y        起始垂直坐标
      * @param strValue 内容
-     * @return
+     * @return 按照公司maven库内bluetoothlibrary内包装的结果,
+     * 字体大小设置分别代表的字体size为:
+     * 1 ==> 3
+     * 0 ==> 8
+     * 3,55 ==> 16
+     * 2,8 ==> 24
+     * 4 ==> 32
+     * 默认字体大小为24.
+     * 然后TEXT后第二位为对应的字号后的大小,默认为0就行.想再加大,++就行.
+     * 比如说想要设置 比常规字体大一号,且再加大,就是
+     * TEXT 4 1 x y 例子
      */
     private static String printText(int font, double size, double x, double y, String strValue) {
         String strText = "T" + " " + String.valueOf(font) + " "

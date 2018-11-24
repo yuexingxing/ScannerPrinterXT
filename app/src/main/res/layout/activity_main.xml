@@ -27,6 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:singleLine="true"
+            android:inputType="textNoSuggestions"
             android:text="" />
     </LinearLayout>
 
@@ -50,6 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:singleLine="true"
+            android:inputType="textNoSuggestions"
             android:text="" />
     </LinearLayout>
 
